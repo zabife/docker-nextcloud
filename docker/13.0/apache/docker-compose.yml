@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:  
-    image: nextcloud
+    image: newgit.aeb.gov.br:4567/vendor/nextcloud:${CI_COMMIT_TAG:-latest}
     deploy:
       restart_policy:
         condition: any
