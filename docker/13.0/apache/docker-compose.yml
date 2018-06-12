@@ -3,9 +3,9 @@ version: '3'
 services:
   nextcloud:  
     image: newgit.aeb.gov.br:4567/vendor/nextcloud:${CI_COMMIT_TAG:-latest}
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    # deploy:
+    #   restart_policy:
+    #     condition: any
+    #     delay: 5s
+    #     max_attempts: 3
+    #     window: 120s
