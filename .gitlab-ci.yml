@@ -34,7 +34,7 @@ deploy-desenvolvimento:
     
     - ssh -l gitlab $DNS_DESENVOLVIMENTO docker-compose down || true
     - ssh -l gitlab $DNS_DESENVOLVIMENTO "CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} docker-compose -f /srv/nextcloud/docker-compose.yml -f /srv/nextcloud/docker-compose.override.yml pull"
-      - ssh -l gitlab $DNS_DESENVOLVIMENTO "CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} docker-compose -f /srv/nextcloud/docker-compose.yml -f /srv/nextcloud/docker-compose.override.yml up -d"
+    - ssh -l gitlab $DNS_DESENVOLVIMENTO "CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} docker-compose -f /srv/nextcloud/docker-compose.yml -f /srv/nextcloud/docker-compose.override.yml up -d"
   environment: desenvolvimento
   dependencies:
     - build
