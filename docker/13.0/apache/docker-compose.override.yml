@@ -16,7 +16,7 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
 
-  app:
+  nextcloud:
     build: .
     ports:
       - 8082:80

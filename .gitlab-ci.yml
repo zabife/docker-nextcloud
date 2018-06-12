@@ -13,42 +13,31 @@ build:
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml -f ./docker/13.0/apache/docker-compose.test.yml build
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml push
 
-# deploy-desenvolvimento:
-#   stage: deploy-desenvolvimento
-#   only:
-#     - master
-#     - tags
-#     - /^Sprint.*$/
-#   variables:
-#     SUBSTITUTION: "s/version: '3'/version: '2.1'/g"
-#     ENV: dev
-#   script:
-#     - sed -i -e "$SUBSTITUTION" docker-compose.yml
-#     - sed -i -e "$SUBSTITUTION" docker-compose.override.yml
-#     # Cria diretório do release e copia arquivos
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME"
-#     - scp docker-compose.yml docker-compose.override.yml gitlab@$DNS_DESENVOLVIMENTO:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME/
-
-#     # Copia arquivos de configuração e inicia serviço
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "cp /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME/ || true"
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "rm -f /srv/$CI_PROJECT_NAME/current"
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "ln -s /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME /srv/$CI_PROJECT_NAME/current"
-
-#     # Baixa últimas imagens e inicia serviço
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/current && docker-compose pull || true"
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/current && docker-compose down || true"
-#     - ssh -l gitlab $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/current && docker-compose -f docker-compose.yml -f docker-compose.$ENV.yml up -d"
-
-#     # 6 - Alembic migration upgrade
-#     - virtualenv-3 .env
-#     - source .env/bin/activate
-#     - pip3 install -r requirements.txt
-#     - python setup.py develop
-#     - alembic -c development.ini upgrade head
-#     - deactivate
-#   environment: desenvolvimento
-#   dependencies:
-#     - build
+deploy-desenvolvimento:
+  stage: deploy-desenvolvimento
+  only:
+    - master
+    - tags
+    - /^Sprint.*$/
+  variable:
+    SUBSTITUTION: "s/version: '3'/version: '2.1'/g"
+    DNS_DESENVOLVIMENTO: docker.aeb.gov.br
+    USER_DESENVOLVIMENTO: nextcloud
+  script:
+    - export CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest}
+    
+    - sed -i -e "$SUBSTITUTION" docker/13.0/apache/docker-compose.yml
+    - scp docker/13.0/apache/docker-compose.yml gitlab@$DNS_DESENVOLVIMENTO:/srv/nextcloud/.
+    
+    - sed -i -e "$SUBSTITUTION" docker/13.0/apache/docker-compose.override.yml
+    - scp docker/13.0/apache/docker-compose.override.yml gitlab@$DNS_DESENVOLVIMENTO:/srv/nextcloud/.
+    
+    - ssh -l gitlab $DNS_DESENVOLVIMENTO docker-compose down || true
+    - ssh -l gitlab $DNS_DESENVOLVIMENTO "export CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} && mkdir -p frontend && mkdir -p backend && docker-compose pull"
+    - ssh -l gitlab $DNS_DESENVOLVIMENTO "export ENV=docker DEPLOY_MODE=docker CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} && docker-compose up -d"
+  environment: desenvolvimento
+  dependencies:
+    - build
 
 # deploy-homologacao:
 #   stage: deploy-homologacao
