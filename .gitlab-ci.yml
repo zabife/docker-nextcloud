@@ -19,7 +19,7 @@ deploy-desenvolvimento:
     - master
     - tags
     - /^Sprint.*$/
-  variable:
+  variables:
     SUBSTITUTION: "s/version: '3'/version: '2.1'/g"
     DNS_DESENVOLVIMENTO: docker.aeb.gov.br
     USER_DESENVOLVIMENTO: nextcloud
