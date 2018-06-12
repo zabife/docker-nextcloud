@@ -11,7 +11,7 @@ build:
     - tags
   script:
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml -f ./docker/13.0/apache/docker-compose.test.yml build
-    - docker-compose push
+    - docker-compose -f ./docker/13.0/apache/docker-compose.yml push
 
 # deploy-desenvolvimento:
 #   stage: deploy-desenvolvimento
