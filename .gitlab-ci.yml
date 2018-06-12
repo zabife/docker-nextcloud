@@ -10,7 +10,7 @@ build:
     - /^Sprint.*$/
     - tags
   script:
-    - docker-compose -f ./docker/13.0/apache/docker-compose.yml -f ./docker/13.0/apache/docker-compose.test.yml build
+    - docker-compose -f ./docker/13.0/apache/docker-compose.yml -f ./docker/13.0/apache/docker-compose.override.yml build
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml push
 
 deploy-desenvolvimento:
