@@ -1,0 +1,40 @@
+default:
+  suites:
+    default:
+      paths:
+        - %paths.base%/../features
+      contexts:
+        - ActorContext
+        - NextcloudTestServerContext
+
+        - AppNavigationContext
+        - AppSettingsContext
+        - AppsManagementContext
+        - CommentsAppContext
+        - ContactsMenuContext
+        - DialogContext
+        - FeatureContext
+        - FileListContext
+        - FilesAppContext
+        - FilesSharingAppContext
+        - LoginPageContext
+        - NotificationContext
+        - SettingsContext
+        - SettingsMenuContext
+        - ThemingAppContext
+        - UsersSettingsContext
+  extensions:
+    Behat\MinkExtension:
+      sessions:
+        default:
+          selenium2: ~
+        John:
+          selenium2: ~
+        Jane:
+          selenium2: ~
+        Rubeus:
+          # Rubeus uses a browser that has CSS grid support.
+          selenium2:
+            capabilities:
+              firefox:
+                profile: %paths.base%/firefox-profiles/css-grid-enabled.zip
