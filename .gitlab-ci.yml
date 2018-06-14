@@ -39,38 +39,32 @@ deploy-desenvolvimento:
   dependencies:
     - build
 
-# deploy-homologacao:
-#   stage: deploy-homologacao
-#   only:
-#     - master
-#     - tags
-#   dependencies:
-#     - build
-#   when: manual
-#   variables:
-#     DOCKER_TLS_VERIFY: 1
-#     ENV: hm
-#   script:
-#     # Cria diretório do release e copia arquivos
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME"
-#     - scp docker-compose.yml docker-compose.override.yml sisrh@$DNS_HOMOLOGACAO:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME/
+deploy-homologacao:
+  stage: deploy-homologacao
+  only:
+    - tags
+  dependencies:
+    - build
+  when: manual
+  variables:
+    DOCKER_TLS_VERIFY: 1
+    ENV: hm
+    USER: cloud
+    CI_PROJECT_NAME: cloud
+  script:
+    # Cria diretório do release e copia arquivos
+    - ssh -l $USER $DNS_HOMOLOGACAO "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG"
+    - scp docker-compose.yml $USER@$DNS_HOMOLOGACAO:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/
 
-#     # Combina o docker-compose local da máquina com o do projeto
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME/ && docker-compose -f docker-compose.yml -f /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml config > docker-compose.$ENV.yml"
+    # Combina o docker-compose local da máquina com o do projeto
+    - ssh -l $USER $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose -f docker-compose.yml -f /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml config > docker-compose.$ENV.yml"
     
-#     # Baixa últimas imagens
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME/ && docker-compose pull"
+    # Baixa últimas imagens
+    - ssh -l $USER $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose pull"
 
-#     # Copia arquivos de configuração e inicia serviço
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "rm -f /srv/$CI_PROJECT_NAME/current"
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "ln -s /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_REF_NAME /srv/$CI_PROJECT_NAME/current"
-#     - ssh -l sisrh $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/current && docker stack deploy -c docker-compose.$ENV.yml --with-registry-auth $CI_PROJECT_NAME"
+    # Copia arquivos de configuração e inicia serviço
+    - ssh -l $USER $DNS_HOMOLOGACAO "rm -f /srv/$CI_PROJECT_NAME/current"
+    - ssh -l $USER $DNS_HOMOLOGACAO "ln -s /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG /srv/$CI_PROJECT_NAME/current"
+    - ssh -l $USER $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/current && docker stack deploy -c docker-compose.$ENV.yml --with-registry-auth $CI_PROJECT_NAME"
 
-#     # 6 - Alembic migration upgrade
-#     - virtualenv-3 .env
-#     - source .env/bin/activate
-#     - pip3 install -r requirements.txt
-#     - python setup.py develop
-#     - alembic -c hm.ini upgrade head
-#     - deactivate
-#   environment: homologacao
+  environment: homologacao
