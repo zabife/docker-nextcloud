@@ -1,3 +1,7 @@
+before_script:
+# Aqui carrega as variáveis de ambiente globais
+  - source /home/gitlab-runner/.env
+
 stages:
    - build
    - deploy-desenvolvimento
