@@ -9,10 +9,6 @@ stages:
 
 build:
   stage: build
-  only:
-    - master
-    - /^Sprint.*$/
-    - tags
   script:
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml -f ./docker/13.0/apache/docker-compose.override.yml build
     - docker-compose -f ./docker/13.0/apache/docker-compose.yml push
