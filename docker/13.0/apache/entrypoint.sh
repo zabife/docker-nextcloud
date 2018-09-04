@@ -37,7 +37,7 @@ if version_greater "$image_version" "$installed_version"; then
         run_as 'php /var/www/html/occ app:list' | sed -n "/Enabled:/,/Disabled:/p" > /tmp/list_before
     fi
     if [ "$(id -u)" = 0 ]; then
-      rsync_options="-rlDog --chown www-data:root"
+      rsync_options="-rlDog"
     else
       rsync_options="-rlD"
     fi
