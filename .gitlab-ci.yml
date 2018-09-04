@@ -15,29 +15,31 @@ build:
 
 deploy-desenvolvimento:
   stage: deploy-desenvolvimento
-  only:
-    - master
-    - tags
-    - /^Sprint.*$/
+  dependencies:
+    - build
   variables:
-    SUBSTITUTION: "s/version: '3'/version: '2.1'/g"
-    DNS_DESENVOLVIMENTO: docker.aeb.gov.br
-    USER_DESENVOLVIMENTO: nextcloud
-  script:
-    - export CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest}
-    
-    - sed -i -e "$SUBSTITUTION" docker/13.0/apache/docker-compose.yml
-    - scp docker/13.0/apache/docker-compose.yml gitlab@$DNS_DESENVOLVIMENTO:/srv/nextcloud/.
-    
-    - sed -i -e "$SUBSTITUTION" docker/13.0/apache/docker-compose.override.yml
-    - scp docker/13.0/apache/docker-compose.override.yml gitlab@$DNS_DESENVOLVIMENTO:/srv/nextcloud/.
-    
-    - ssh -l gitlab $DNS_DESENVOLVIMENTO docker-compose down || true
-    - ssh -l gitlab $DNS_DESENVOLVIMENTO "CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} docker-compose -f /srv/nextcloud/docker-compose.yml -f /srv/nextcloud/docker-compose.override.yml pull"
-    - ssh -l gitlab $DNS_DESENVOLVIMENTO "CI_COMMIT_TAG=${CI_COMMIT_TAG:-latest} docker-compose -f /srv/nextcloud/docker-compose.yml -f /srv/nextcloud/docker-compose.override.yml up -d"
+    ENV: docker
+    USER: cloud
+    CI_PROJECT_NAME: cloud
   environment: desenvolvimento
   dependencies:
     - build
+  script:
+    # Cria diretório do release e copia arquivos
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG"
+    - scp docker-compose.yml $USER@$DNS_DESENVOLVIMENTO:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/
+
+    # Combina o docker-compose local da máquina com o do projeto
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose -f docker-compose.yml -f /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml config > docker-compose.$ENV.yml"
+
+    # Baixa últimas imagens
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose pull"
+
+    # Copia arquivos de configuração e inicia serviço
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "rm -f /srv/$CI_PROJECT_NAME/current"
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "ln -s /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG /srv/$CI_PROJECT_NAME/current"
+    - ssh -l $USER $DNS_DESENVOLVIMENTO "cd /srv/$CI_PROJECT_NAME/current && docker stack deploy -c docker-compose.$ENV.yml --with-registry-auth $CI_PROJECT_NAME"
+
 
 deploy-homologacao:
   stage: deploy-homologacao
@@ -58,7 +60,7 @@ deploy-homologacao:
 
     # Combina o docker-compose local da máquina com o do projeto
     - ssh -l $USER $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose -f docker-compose.yml -f /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml config > docker-compose.$ENV.yml"
-    
+
     # Baixa últimas imagens
     - ssh -l $USER $DNS_HOMOLOGACAO "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose pull"
 
