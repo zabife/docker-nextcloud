@@ -25,6 +25,7 @@ deploy-desenvolvimento:
     ENV: docker
     USER: cloud
     CI_PROJECT_NAME: cloud
+    DNS_DESENVOLVIMENTO: docker-dev01.aeb.gov.br
   environment: desenvolvimento
   dependencies:
     - build
