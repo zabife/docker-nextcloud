@@ -33,7 +33,7 @@ deploy-desenvolvimento:
     # Cria diretório do release e copia arquivos
     - echo $USER $DNS_DEVELOPMENT $CI_COMMIT_TAG $CI_PROJECT_NAME
     - ssh -l $USER $DNS_DEVELOPMENT "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG"
-    - scp docker-compose.yml $USER@$DNS_DEVELOPMENT:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/
+    - scp docker/13.0/apache/docker-compose.yml $USER@$DNS_DEVELOPMENT:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/
 
     # Combina o docker-compose local da máquina com o do projeto
     - ssh -l $USER $DNS_DEVELOPMENT "cd /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/ && docker-compose -f docker-compose.yml -f /srv/$CI_PROJECT_NAME/env/docker-compose.$ENV.yml config > docker-compose.$ENV.yml"
