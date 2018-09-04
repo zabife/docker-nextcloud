@@ -31,6 +31,7 @@ deploy-desenvolvimento:
     - build
   script:
     # Cria diretório do release e copia arquivos
+    - echo $USER $DNS_DESENVOLVIMENTO $CI_COMMIT_TAG $CI_PROJECT_NAME
     - ssh -l $USER $DNS_DESENVOLVIMENTO "mkdir -p /srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG"
     - scp docker-compose.yml $USER@$DNS_DESENVOLVIMENTO:/srv/$CI_PROJECT_NAME/releases/$CI_COMMIT_TAG/
 
